@@ -231,7 +231,7 @@ class ChatAgent(Actor):
                     chunk)
                 
                 # Skip empty chunks (all values are None)
-                if current_finish_reason is None and current_tool_calls is None and content_stream is None:
+                if (current_finish_reason, current_tool_calls, content_stream) == (None, None, None):
                     continue
                     
                 logger.debug(
