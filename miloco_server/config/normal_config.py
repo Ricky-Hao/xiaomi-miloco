@@ -104,6 +104,7 @@ CAMERA_CONFIG = {
         TRIGGER_RULE_RUNNER_CONFIG["vision_use_img_count"],
         CHAT_CONFIG["vision_use_img_count"]
     ),
+    "motion_detection_threshold": _config["camera"].get("motion_detection_threshold", 5),
 }
 
 # MIoT dynamic configuration

@@ -17,7 +17,7 @@ from schema.mcp_schema import CallToolResult
 from thespian.actors import ActorExitRequest
 
 from miloco_server import actor_system
-from miloco_server.config.normal_config import TRIGGER_RULE_RUNNER_CONFIG
+from miloco_server.config.normal_config import TRIGGER_RULE_RUNNER_CONFIG, CAMERA_CONFIG
 from miloco_server.config.prompt_config import UserLanguage
 from miloco_server.dao.trigger_rule_log_dao import TriggerRuleLogDAO
 from miloco_server.mcp.tool_executor import ToolExecutor
@@ -64,8 +64,10 @@ class TriggerRuleRunner:
         self._is_running: bool = False
         self._interval_seconds = TRIGGER_RULE_RUNNER_CONFIG["interval_seconds"]
         self._vision_use_img_count = TRIGGER_RULE_RUNNER_CONFIG["vision_use_img_count"]
+        self._motion_detection_threshold = CAMERA_CONFIG["motion_detection_threshold"]
         logger.info(
-            "TriggerRuleRunner init success, trigger_rules: %s", self.trigger_rules
+            "TriggerRuleRunner init success, trigger_rules: %s, motion_detection_threshold: %s",
+            self.trigger_rules, self._motion_detection_threshold
         )
 
     def _get_vision_understaning_llm_proxy(self) -> LLMProxy:
@@ -377,8 +379,11 @@ class TriggerRuleRunner:
         """Detect motion in images"""
         if len(camera_img_seq.img_list) < 2:
             return False
-        return check_camera_motion(camera_img_seq.img_list[0].data,
-                                   camera_img_seq.img_list[-1].data)
+        return check_camera_motion(
+            camera_img_seq.img_list[0].data,
+            camera_img_seq.img_list[-1].data,
+            threshold=self._motion_detection_threshold
+        )
 
     async def _execute_trigger_action(
         self, execute_id: str, rule: TriggerRule,

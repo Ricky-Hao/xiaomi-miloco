@@ -57,6 +57,7 @@ trigger_rule_runner:
 # Camera configuration
 camera:
   frame_interval: 500 # Unit: Millisecond (ms)
+  motion_detection_threshold: 5 # Motion detection sensitivity threshold (DHash Hamming distance, 3-15 recommended)
 
 
 # MIoT configuration, default to 'cn', use your MiHome cloud server

@@ -16,7 +16,7 @@ from PIL import Image
 logger = logging.getLogger(name=__name__)
 
 HASH_SIZE = 16
-THRESHOLD = 5
+THRESHOLD = 5  # Default threshold, can be overridden by config
 
 
 class CheckImgMotionByDHash:
@@ -36,9 +36,17 @@ class CheckImgMotionByDHash:
             return None
 
     @staticmethod
-    def is_image_changed(image1_src, image2_src) -> tuple[bool, int]:
+    def is_image_changed(image1_src, image2_src, threshold: int = THRESHOLD) -> tuple[bool, int]:
         """
         Check if two images have changed
+        
+        Args:
+            image1_src: First image source
+            image2_src: Second image source
+            threshold: Motion detection threshold (default: THRESHOLD)
+        
+        Returns:
+            tuple[bool, int]: (changed, distance) - True if motion detected and Hamming distance
         """
         hash1 = CheckImgMotionByDHash._calculate_dhash(image1_src)
         hash2 = CheckImgMotionByDHash._calculate_dhash(image2_src)
@@ -46,13 +54,21 @@ class CheckImgMotionByDHash:
             return (False, -1)  # Processing failed
         # Calculate Hamming distance, imagehash library supports direct hash subtraction
         distance = hash1 - hash2
-        changed = distance > THRESHOLD
+        changed = distance > threshold
         return (changed, distance)
 
 
-def check_camera_motion(image1_src, image2_src) -> bool:
+def check_camera_motion(image1_src, image2_src, threshold: int = THRESHOLD) -> bool:
     """
     Check if camera image has changed
+    
+    Args:
+        image1_src: First image source
+        image2_src: Second image source
+        threshold: Motion detection threshold (default: THRESHOLD)
+    
+    Returns:
+        bool: True if motion detected, False otherwise
     """
-    motion, _ = CheckImgMotionByDHash.is_image_changed(image1_src, image2_src)
+    motion, _ = CheckImgMotionByDHash.is_image_changed(image1_src, image2_src, threshold)
     return motion
