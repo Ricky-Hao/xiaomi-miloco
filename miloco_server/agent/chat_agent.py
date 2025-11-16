@@ -225,14 +225,18 @@ class ChatAgent(Actor):
             chunk_content_cache: list[str] = []
             delta_tool_call_list: list[list[ChoiceDeltaToolCall]] = []
             finish_reason = None
+            first_empty_skipped = False  # Track if we've already skipped the first empty chunk
 
             async for chunk in llm_response:
                 current_finish_reason, current_tool_calls, content_stream = await self._process_llm_chunk(
                     chunk)
                 
-                # Skip empty chunks (all values are None)
+                # Skip only the first empty chunk (some models send this as initialization)
                 if (current_finish_reason, current_tool_calls, content_stream) == (None, None, None):
-                    continue
+                    if not first_empty_skipped:
+                        first_empty_skipped = True
+                        continue
+                    raise RuntimeError("No choices in LLM response")
                     
                 logger.debug(
                     "[%s] LLM response: %s, current_finish_reason: %s, current_tool_calls: %s, content_stream: %s",
@@ -300,9 +304,6 @@ class ChatAgent(Actor):
 
         chat_chunk: ChatCompletionChunk = chunk["chunk"]
         if not chat_chunk.choices:
-            # Some LLM providers (e.g., GPT-4.1) may send empty chunks at the start or end of stream
-            # Skip these chunks instead of raising an error
-            logger.debug("[%s] Skipping chunk with empty choices", self._request_id)
             return None, None, None
 
         choice = chat_chunk.choices[0]
