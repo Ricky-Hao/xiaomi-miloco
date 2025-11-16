@@ -214,3 +214,7 @@ xiaomi.camera.cw301:
   channel_count: 1
   name: 小米室外摄像机 4C
   vendor: 小米
+xiaomi.camera.082ac1:
+  channel_count: 2
+  name: 小米智能摄像机 4 双摄版
+  vendor: 小米
